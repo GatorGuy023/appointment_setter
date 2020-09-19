@@ -6,7 +6,9 @@ namespace App\Controller;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use App\Entity\User;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -14,6 +16,8 @@ class SecurityController extends AbstractController
 {
     /**
      * @Route("/login", name="app_login", methods={"POST"})
+     * @param IriConverterInterface $iriConverter
+     * @return JsonResponse|Response
      */
     public function login(IriConverterInterface $iriConverter)
     {
@@ -34,4 +38,12 @@ class SecurityController extends AbstractController
             ]);
     }
 
+    /**
+     * @Route("/logout", name="app_logout")
+     * @throws Exception
+     */
+    public function logout()
+    {
+        throw new Exception("This controller method should never be reached.");
+    }
 }
