@@ -16,29 +16,24 @@ use Symfony\Component\Uid\Uuid;
 
 /**
  * @ApiResource(
- *     collectionOperations={
- *          "get",
- *          "post"={
- *              "denormalization_context"={
- *                  "groups"={"post"}
- *              }
- *          }
+ *     normalizationContext={
+ *          "groups"={"company:read"}
+ *     },
+ *     denormalizationContext={
+ *          "groups"={"company:write"}
  *     },
  *     itemOperations={
  *          "get"={
  *              "normalization_context"={
- *                  "groups"={"get-company-users"}
+ *                  "groups"={"company:read", "company:read:item"}
  *              }
  *          },
- *          "put"={
- *              "denormalization_context"={
- *                  "groups"={"put"}
- *              },
- *              "normalization_context"={
- *                  "groups"={"get"}
- *              }
- *          },
+ *          "put",
  *          "delete"
+ *     },
+ *     collectionOperations={
+ *          "get",
+ *          "post"
  *     }
  * )
  * @ORM\Entity(repositoryClass=CompanyRepository::class)
@@ -60,6 +55,7 @@ class Company
     /**
      * @ORM\Column(type="guid", unique=true)
      * @ApiProperty(identifier=true)
+     * @Groups({"company:read", "user:read:item"})
      */
     private $code;
 
@@ -67,14 +63,14 @@ class Company
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank()
      * @Assert\Length(min="2", max="255")
-     * @Groups({"get", "post", "put", "get-company-users"})
+     * @Groups({"company:read", "company:write", "user:read:item", "user:write:collection"})
      */
     private $name;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\User", mappedBy="company")
      * @ApiSubresource()
-     * @Groups({"get-company-users", "get"})
+     * @Groups({"company:read:item"})
      */
     private $users;
 
@@ -121,6 +117,7 @@ class Company
     public function addUser(User $user): self
     {
         $this->users->add($user);
+        $user->setCompany($this);
 
         return $this;
     }

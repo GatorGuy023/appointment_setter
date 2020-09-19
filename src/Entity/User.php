@@ -14,35 +14,27 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
+ *     normalizationContext={
+ *          "groups"={"user:read"}
+ *     },
+ *     denormalizationContext={
+ *          "groups"={"user:write"}
+ *     },
  *     collectionOperations={
- *          "get"={
- *              "normalization_context"={
- *                  "groups"={"get"}
- *              }
- *          },
+ *          "get",
  *          "post"={
  *              "denormalization_context"={
- *                  "groups"={"post"}
- *              },
- *              "normalization_context"={
- *                  "groups"={"get"}
+ *                  "groups"={"user:write", "user:write:collection"}
  *              }
  *          }
  *     },
  *     itemOperations={
  *          "get"={
  *              "normalization_context"={
- *                  "groups"={"get"}
+ *                  "groups"={"user:read", "user:read:item"}
  *              }
  *          },
- *          "put"={
- *              "denormalization_context"={
- *                  "groups"={"put"}
- *              },
- *              "normalization_context"={
- *                  "groups"={"get"}
- *              }
- *          },
+ *          "put",
  *          "delete"
  *     },
  *     subresourceOperations={
@@ -72,6 +64,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="guid", unique=true)
      * @ApiProperty(identifier=true)
+     * @Groups({"user:read"})
      */
     private $code;
 
@@ -79,7 +72,7 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank()
      * @Assert\Length(min="6", max="255")
-     * @Groups({"get", "post", "put", "get-company-users"})
+     * @Groups({"user:read", "company:read:item", "user:write"})
      */
     private $username;
 
@@ -88,9 +81,9 @@ class User implements UserInterface
      * @Assert\Regex(
      *    pattern="/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':\x22\\|,.<>\/?]).{7,}/",
      *    message="Password must be at least 8 characters long and contain at least one digit, one uppercase letter, one lowercase letter, and one special character",
-     *    groups={"post"}
+     *    groups={"user:write"}
      *   )
-     * @Groups({"post"})
+     * @Groups({"user:write"})
      */
     private $password;
 
@@ -103,7 +96,7 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank()
      * @Assert\Length(min="1", max="255")
-     * @Groups({"post", "put"})
+     * @Groups({"user:write"})
      */
     private $fname;
 
@@ -111,7 +104,7 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank()
      * @Assert\Length(min="1", max="255")
-     * @Groups({"post", "put"})
+     * @Groups({"user:write"})
      */
     private $lname;
 
@@ -120,14 +113,14 @@ class User implements UserInterface
      * @Assert\NotBlank()
      * @Assert\Email()
      * @Assert\Length(max="255")
-     * @Groups({"get", "post", "put"})
+     * @Groups({"user:read", "user:write", "company:read:item"})
      */
     private $email;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Company", inversedBy="users")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Company", inversedBy="users", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"get", "post"})
+     * @Groups({"user:read:item", "user:write:collection"})
      * @Assert\NotNull()
      */
     private $company;
@@ -142,9 +135,16 @@ class User implements UserInterface
         return $this->id;
     }
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
     }
 
     public function getUsername(): ?string
@@ -208,7 +208,7 @@ class User implements UserInterface
     }
 
     /**
-     * @Groups({"get", "get-company-users"})
+     * @Groups({"user:read", "company:read:item"})
      */
     public function getFullName(): string
     {
