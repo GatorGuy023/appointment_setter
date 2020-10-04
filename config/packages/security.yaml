@@ -27,3 +27,8 @@ security:
     access_control:
         - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         # - { path: ^/profile, roles: ROLE_USER }
+
+    role_hierarchy:
+        ROLE_COMPANY_ADMIN: ROLE_USER
+        ROLE_ADMIN: ROLE_COMPANY_ADMIN
+        ROLE_SUPER_ADMIN: ROLE_ADMIN

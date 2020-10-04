@@ -119,6 +119,9 @@
     "fzaninotto/faker": {
         "version": "v1.9.1"
     },
+    "justinrainbow/json-schema": {
+        "version": "5.2.10"
+    },
     "monolog/monolog": {
         "version": "2.1.1"
     },
@@ -275,6 +278,12 @@
             "./src/Controller/.gitignore",
             "./src/Kernel.php"
         ]
+    },
+    "symfony/http-client": {
+        "version": "v5.1.5"
+    },
+    "symfony/http-client-contracts": {
+        "version": "v2.2.0"
     },
     "symfony/http-foundation": {
         "version": "v5.1.5"

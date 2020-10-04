@@ -61,6 +61,6 @@ class RegistrationSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPassword()));
+        $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
     }
 }

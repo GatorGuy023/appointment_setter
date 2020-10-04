@@ -32,3 +32,23 @@ services:
     App\EventListener\LogoutListener:
         tags:
             - { name: kernel.event_listener, event: Symfony\Component\Security\Http\Event\LogoutEvent, dispather: security.event_dispatcher.main }
+
+    App\ApiPlatform\AutoGroupResourceMetadataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory'
+        # causes this to decorate around the cached factory so that
+        # our service is never cached (which, of course, can have performance
+        # implications!
+        decoration_priority: -20
+        arguments: [ '@App\ApiPlatform\AutoGroupResourceMetadataFactory.inner' ]
+        autoconfigure: false
+
+    App\Doctrine\UserSetCompanyListener:
+        tags: ['doctrine.orm.entity_listener']
+
+    App\Doctrine\UserSetRoleListener:
+        tags: ['doctrine.orm.entity_listener']
+
+    App\Serializer\AdminContextBuilder:
+        decorates: 'api_platform.serializer.context_builder'
+        arguments: ['@App\Serializer\AdminContextBuilder.inner']
+        autoconfigure: false

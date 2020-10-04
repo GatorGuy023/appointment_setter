@@ -16,24 +16,21 @@ use Symfony\Component\Uid\Uuid;
 
 /**
  * @ApiResource(
- *     normalizationContext={
- *          "groups"={"company:read"}
- *     },
- *     denormalizationContext={
- *          "groups"={"company:write"}
- *     },
  *     itemOperations={
  *          "get"={
- *              "normalization_context"={
- *                  "groups"={"company:read", "company:read:item"}
- *              }
+ *              "security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and user.getCompany() == object)"
  *          },
- *          "put",
- *          "delete"
+ *          "put"={
+ *              "security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_COMPANY_ADMIN') and user.getCompany() == object"
+ *          },
+ *          "delete"={
+ *              "security"="is_granted('ROLE_ADMIN')"
+ *          }
  *     },
  *     collectionOperations={
- *          "get",
- *          "post"
+ *          "get"={
+ *              "security"="is_granted('ROLE_ADMIN')"
+ *          }
  *     }
  * )
  * @ORM\Entity(repositoryClass=CompanyRepository::class)
@@ -55,7 +52,7 @@ class Company
     /**
      * @ORM\Column(type="guid", unique=true)
      * @ApiProperty(identifier=true)
-     * @Groups({"company:read", "user:read:item"})
+     * @Groups({"company:read", "user:item:read"})
      */
     private $code;
 
@@ -63,14 +60,14 @@ class Company
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank()
      * @Assert\Length(min="2", max="255")
-     * @Groups({"company:read", "company:write", "user:read:item", "user:write:collection"})
+     * @Groups({"company:read", "company:write", "user:item:read", "user:collection:write"})
      */
     private $name;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\User", mappedBy="company")
      * @ApiSubresource()
-     * @Groups({"company:read:item"})
+     * @Groups({"company:item:read"})
      */
     private $users;
 
