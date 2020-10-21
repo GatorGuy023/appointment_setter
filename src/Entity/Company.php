@@ -71,10 +71,17 @@ class Company
      */
     private $users;
 
+    /**
+     * @ORM\OneToMany(targetEntity=AppointmentType::class, mappedBy="company", orphanRemoval=true)
+     * @ApiSubresource()
+     */
+    private $appointmentTypes;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
         $this->code = Uuid::v4()->toRfc4122();
+        $this->appointmentTypes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -122,6 +129,37 @@ class Company
     public function removeUser(User $user): self
     {
         $this->users->removeElement($user);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|AppointmentType[]
+     */
+    public function getAppointmentTypes(): Collection
+    {
+        return $this->appointmentTypes;
+    }
+
+    public function addAppointmentType(AppointmentType $appointmentType): self
+    {
+        if (!$this->appointmentTypes->contains($appointmentType)) {
+            $this->appointmentTypes[] = $appointmentType;
+            $appointmentType->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAppointmentType(AppointmentType $appointmentType): self
+    {
+        if ($this->appointmentTypes->contains($appointmentType)) {
+            $this->appointmentTypes->removeElement($appointmentType);
+            // set the owning side to null (unless already changed)
+            if ($appointmentType->getCompany() === $this) {
+                $appointmentType->setCompany(null);
+            }
+        }
 
         return $this;
     }

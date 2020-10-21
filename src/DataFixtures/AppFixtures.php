@@ -2,10 +2,12 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\AppointmentType;
 use App\Entity\Company;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Faker\Factory as FakerFactory;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -18,6 +20,8 @@ class AppFixtures extends Fixture
      */
     private $passwordEncoder;
 
+    private $companyAppointmentTypes = [];
+
     /**
      * @var FakerFactory
      */
@@ -29,10 +33,15 @@ class AppFixtures extends Fixture
         $this->passwordEncoder = $passwordEncoder;
     }
 
+    /**
+     * @param ObjectManager $manager
+     * @throws Exception
+     */
     public function load(ObjectManager $manager)
     {
         $this->loadCompanies($manager);
         $this->loadUsers($manager);
+        $this->loadAppointmentTypes($manager);
     }
 
     private function loadCompanies(ObjectManager $manager)
@@ -52,11 +61,16 @@ class AppFixtures extends Fixture
             $this->addReference("company$i", $company);
 
             $manager->persist($company);
+            $this->companyAppointmentTypes[$company->getCode()] = 0;
         }
 
         $manager->flush();
     }
 
+    /**
+     * @param ObjectManager $manager
+     * @throws Exception
+     */
     private function loadUsers(ObjectManager $manager)
     {
         $user = new User();
@@ -75,7 +89,7 @@ class AppFixtures extends Fixture
 
         for ($i = 0; $i < 5; $i++) {
             /** @var Company $company */
-            $company = $this->getReference('company'.rand(0,2));
+            $company = $this->getRandomCompanyReference();
 
             $user = new User();
             $user->setEmail($this->faker->email)
@@ -89,5 +103,61 @@ class AppFixtures extends Fixture
         }
 
         $manager->flush();
+    }
+
+    /**
+     * @param ObjectManager $manager
+     * @throws Exception
+     */
+    public function loadAppointmentTypes(ObjectManager $manager)
+    {
+        for ($i = 0; $i < 9; $i++)
+        {
+            $company = $this->getRandomCompanyReference();
+            $appointmentType = new AppointmentType();
+            $appointmentType->setName($this->faker->word)
+                ->setDuration($this->faker->randomElement([15,30,60]))
+                ->setCompany($company);
+
+            $manager->persist($appointmentType);
+            $this->setReference(
+                'appointmentType'.
+                $company->getCode().
+                $this->companyAppointmentTypes[$company->getCode()],
+                $appointmentType
+            );
+            $this->companyAppointmentTypes[$company->getCode()]++;
+        }
+
+        $manager->flush();
+    }
+
+    /**
+     * @return Company
+     * @throws Exception
+     */
+    public function getRandomCompanyReference(): Company
+    {
+        /** @var Company $company */
+        $company = $this->getReference('company'.random_int(0, 2));
+        return $company;
+    }
+
+    /**
+     * @param Company $company
+     * @return AppointmentType|null
+     * @throws Exception
+     */
+    public function getRandomAppointmentType(Company $company): ?AppointmentType
+    {
+        $maxAppointments = $this->companyAppointmentTypes[$company->getCode()] - 1;
+
+        if ($maxAppointments < 0) {
+            return null;
+        }
+
+        /** @var AppointmentType $appointmentType */
+        $appointmentType = $this->getReference('appointmentType'.$company->getCode().random_int(0, $maxAppointments));
+        return $appointmentType;
     }
 }

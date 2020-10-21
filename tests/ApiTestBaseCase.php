@@ -4,6 +4,7 @@ namespace App\Tests;
 
 
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
+use App\Entity\AppointmentType;
 use App\Entity\Company;
 use App\Entity\User;
 use Doctrine\DBAL\DBALException;
@@ -26,7 +27,8 @@ class ApiTestBaseCase extends ApiTestCase
         $this->client = self::createClient();
         $this->truncateTables([
             Company::class,
-            User::class
+            User::class,
+            AppointmentType::class
         ]);
     }
 

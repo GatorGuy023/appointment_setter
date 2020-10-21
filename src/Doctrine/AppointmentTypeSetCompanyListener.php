@@ -4,10 +4,11 @@
 namespace App\Doctrine;
 
 
+use App\Entity\AppointmentType;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Security;
 
-class UserSetCompanyListener
+class AppointmentTypeSetCompanyListener
 {
     /**
      * @var Security
@@ -19,17 +20,17 @@ class UserSetCompanyListener
         $this->security = $security;
     }
 
-    public function prePersist(User $user)
+    public function prePersist(AppointmentType $appointmentType)
     {
         /** @var User $loggedInUser */
         $loggedInUser = $this->security->getUser();
 
-        if ($user->getCompany()) {
+        if ($appointmentType->getCompany()) {
             return;
         }
 
         if ($this->security->isGranted(User::ROLE_USER)) {
-            $user->setCompany($loggedInUser->getCompany());
+            $appointmentType->setCompany($loggedInUser->getCompany());
         }
     }
 }
